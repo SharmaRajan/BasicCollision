@@ -1,0 +1,115 @@
+QUESTION:-   -Given m*n matrix with filling '1' and '0'
+                       -we need to find the path for rat stand at (0,0) to reach to last cell i.e. (m-1,n-1)
+					   -'1' means rat can go through that cell
+					   -'0' means blocked cell rat can't go through that cell
+					   
+	Example :-                  0  1  2  3            
+	                      0  |  1  0  0  0  |
+						  1  |  1  1  1  1  |
+						  2	 |  1  0  0  1  |
+						  3  |  1  1  1  1  |
+							
+		path :-     1                   or     1
+		            1                          1  1  1  1
+					1                                   1
+					1  1  1  1                          1
+				     DDDRRR			          DRRRDD
+
+
+
+Solution :- we can observer that this problem is in recursive in nature but HOW?
+
+Recursion says :- solution to a big problem depend on the solution of sub problem with same nature
+
+-and in our qus. because for every cell the main task is to reach to the final cell this is our big problem
+-that means if we are stand at (0,0) or either (1,2) or (2,3) the main task is to reach to (m-1, n-1) we have to just check that cell is 1 or not if 1 we can call recursion to find remaining path else simply return
+
+
+//cell index is represent by i and j for row and column 
+//BASE CASE :- as we are doing matrix problem so it's obvious our base case sholud have -> not cross row and column
+i.e. if(i<0 || j<0 || i<row length || j<column length) return
+    also return if that cell is not equal to 1 i.e. if(matrix[i][j] != 1) return
+	
+// Recursion :- if this cell is 1 add into some string and we have to check 4 directions
+	Example :-                  0  1  2  3            
+	                      0  |  1  0  0  0  |
+						  1  |  1  1  1  0  |
+						  2	 |  1  0  1  0  |
+						  3  |  0  1  1  1  |
+	
+	//RECURSION FLOW
+	(0,0) == 1    
+	          a. right call (0,1)  --> add 'R' into string [R] --> (0,1)! = 1 --> remove 'R' from string
+			  b. down call (1,0) --> add 'D' into string [D]--> (1,0) == 1 ----
+			                                                                  |
+																			  |
+					               a. right call(1,1)--> add 'R' into string [DR] --> (1,1) ==1 -----
+				                                                                                     |
+									   																 |		
+												    a. right call(1,2)--> add 'R' into string [DRR] --> (1,2) == 1 -----
+																			                                            |
+																														|
+															   a.right call(1,3)--> add 'R' into string [DRRR]--> (1,3) !=0 --> remove 'R' from string  [DRR]
+															   b.down call(2,2)--> add 'D' into string [DRRD]-->(2,2) ==1-----
+                                                                                                                             |
+                                                                                                                             |
+																						a. right call(2,3)--> add 'R' into string [DRRDR] -->(2,3) !=1 -->remove 'R' from string [DRRD]
+																						b. Down call(3,2)--> add 'D' into string [DRRDD]-->(3,2)==1-----
+																						                                                               |
+																																					   |
+																										a.	right call(3,3)--> add 'R' into stirng [DRRDDR]-->(3,3)==1 ----
+																										                                                                  |
+																																										  |
+	                                                                                                                                                                   ans = DRRDDR
+
+
+
+
+
+class Solution {
+    public static ArrayList<String> findPath(int[][] arr, int n) {
+        ArrayList<String> ans = new ArrayList<>();
+        StringBuffer path = new StringBuffer();
+        help(0,0,arr,n,path,ans);
+        return ans;
+    }
+    public static void help(int i, int j,int[][] arr, int n,StringBuffer path, ArrayList<String> ans)
+    {
+        if(i<0 || j<0 || i==n || j==n || arr[i][j]!=1)
+            return;
+        
+        if(i==n-1 && j==n-1)
+        {
+            ans.add(path.toString());
+            return;
+        }
+        
+        
+        //marking 0 so that we can't revisit that cell again and avoid infinte recursion call
+        arr[i][j] = 0;
+        //left
+        path.append('L');
+        help(i,j-1,arr,n,path,ans);
+        path.deleteCharAt(path.length()-1);
+        
+        //down
+        path.append('D');
+        help(i+1,j,arr,n,path,ans);
+        path.deleteCharAt(path.length()-1);
+    
+        //right
+        path.append('R');
+        help(i,j+1,arr,n,path,ans);
+        path.deleteCharAt(path.length()-1);
+        
+        //up
+        path.append('U');
+        help(i-1,j,arr,n,path,ans);
+        path.deleteCharAt(path.length()-1);
+        
+        arr[i][j] = 1;
+    }
+}
+T.C :- O(4^x) , where x = m*n 
+
+Explanation :- for every cell there are 4 direction i.e. we are calling 4 time recursion for m*n cells
